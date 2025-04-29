@@ -126,7 +126,7 @@ $ python main.py \
 
 ```shell script
 $ python main.py \
-    --disrtibuted_world_size $WORLDSIZE \
+    --distributed_world_size $WORLDSIZE \
     --input_path /path/to/data \
     --model ehr_model \
     --embed_model $descemb \
