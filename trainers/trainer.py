@@ -141,8 +141,9 @@ class Trainer(object):
             auprc_train = 0
 
             self.model.train()
-
-            for sample in tqdm.tqdm(self.data_loaders['train']):    
+            #minor change in for loop to add batch index for debugging purpose
+            for batch_idx, sample in enumerate(tqdm.tqdm(self.data_loaders['train'])):
+                print(f"Epoch {epoch}, Batch {batch_idx} loaded...")
                 self.optimizer.zero_grad(set_to_none=True)
                 net_output = self.model(**sample["net_input"])
                 #NOTE we assume self.model is wrapped by torch.nn.parallel.data_parallel.DataParallel
