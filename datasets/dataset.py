@@ -1,3 +1,5 @@
+dataset.py
+
 import os
 import logging
 import random
@@ -105,8 +107,8 @@ class BaseDataset(torch.utils.data.Dataset):
         probability_matrix.masked_fill_(special_tokens_mask, value=0.0)
         masked_indices = torch.bernoulli(probability_matrix).bool()
 
-        while torch.equal(masked_indices, torch.zeros(len(masked_indices)).bool()):
-            masked_indices = torch.bernoulli(probability_matrix).bool()
+        # while torch.equal(masked_indices, torch.zeros(len(masked_indices)).bool()):
+        #     masked_indices = torch.bernoulli(probability_matrix).bool()
     
         labels[~masked_indices] = -100  # We only compute loss on masked tokens
 
@@ -323,7 +325,8 @@ class MLMTokenizedDataset(BaseDataset):
         self.mlm_prob = mlm_prob
 
         col_names = ['input_ids', 'token_type_ids', 'attention_mask']
-        
+        # os.chdir("../../../")
+        print([os.path.join(self.data_path, f"{col}{self.ext}") for col in col_names])
         self.input_ids, self.token_type_ids, self.attention_mask = (
             np.load(
                 file=os.path.join(self.data_path, f"{col}{self.ext}"),
@@ -339,7 +342,6 @@ class MLMTokenizedDataset(BaseDataset):
         input_ids = torch.LongTensor(self.input_ids[index])
         token_type_id = torch.LongTensor(self.token_type_ids[index])
         attn_mask = torch.LongTensor(self.attention_mask[index])
-
         input_ids, mlm_labels = self.mask_tokens(input_ids.clone(), special_tokens_mask=None)
         return {
             'input_ids': input_ids,
