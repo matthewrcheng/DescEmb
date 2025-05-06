@@ -54,17 +54,21 @@ class BertTextEncoder(nn.Module):
             logger.info(
                 "Preparing to load pre-trained checkpoint {}".format(args.model_path)
             )
-            state_dict = torch.load(args.model_path)['model_state_dict']
+            # Added weights_only to false to fix some errors related to colab pytorch version
+            state_dict = torch.load(args.model_path, weights_only=False)['model_state_dict'] 
             state_dict = {
                 k: v for k, v in state_dict.items()
                 if 'mlm' not in k
             }
-            self.load_state_dict(state_dict, strict=True)
-
+            
+            # Remove token_type_embeddings keys manually
+            keys_to_remove = [k for k in state_dict.keys() if 'token_type_embeddings' in k]
+            for key in keys_to_remove:
+                print(f"Removing {key} from checkpoint to avoid shape mismatch")
+                del state_dict[key]
+            missing_keys, unexpected_keys = self.load_state_dict(state_dict, strict=False)
             logger.info(
-                "Loaded checkpoint {}".format(
-                    args.model_path
-                )
+                f"Loaded checkpoint {args.model_path} with {len(missing_keys)} missing keys and {len(unexpected_keys)} unexpected keys"
             )
 
     @classmethod

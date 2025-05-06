@@ -29,7 +29,8 @@ class CodeEmb(nn.Module):
             logger.info(
                 "Preparing to load pre-trained checkpoint {}".format(args.model_path)
             )
-            state_dict = torch.load(args.model_path)['model_state_dict']
+            #Added weight_only as false to fix some torch.load errors in the pytorch version of colab
+            state_dict = torch.load(args.model_path, weights_only=False)['model_state_dict']
 
             state_dict = {
                 'embedding.weight': v for k, v in state_dict.items()

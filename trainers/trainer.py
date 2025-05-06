@@ -143,8 +143,8 @@ class Trainer(object):
             auprc_train = 0
 
             self.model.train()
-
-            for batch_idx, sample in enumerate(tqdm.tqdm(self.data_loaders['train'])):    
+            #minor change in for loop to add batch index for debugging purpose
+            for batch_idx, sample in enumerate(tqdm.tqdm(self.data_loaders['train'])):
                 logger.info(f"Epoch {epoch}, Batch {batch_idx} loaded...")
 
                 self.optimizer.zero_grad(set_to_none=True)

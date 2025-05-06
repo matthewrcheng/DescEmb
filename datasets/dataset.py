@@ -97,7 +97,8 @@ class BaseDataset(torch.utils.data.Dataset):
         if special_tokens_mask is None:
             special_tokens_mask = torch.tensor(
                 self.tokenizer.get_special_tokens_mask(
-                    labels, already_has_special_tokens=True
+                    #labels, already_has_special_tokens=True
+                    labels.tolist(), already_has_special_tokens=True
                 ),
                 dtype=torch.bool
             )
@@ -186,6 +187,7 @@ class CodeDataset(BaseDataset):
         return len(self.input_idcs)
     
     def __getitem__(self, index):
+        #print(f"Loading sample___ {index}...")
         prefix_tensor = torch.LongTensor([1])
         input_idcs = torch.LongTensor(self.input_idcs[index])
         input_idcs = torch.cat((prefix_tensor, input_idcs), dim=0)
@@ -273,6 +275,7 @@ class TokenizedDataset(BaseDataset):
         return len(self.input_ids)
     
     def __getitem__(self, index):
+        #print(f"Loading sample_ {index}...")
         input_ids = torch.LongTensor(self.input_ids[index])
         token_type_id = torch.LongTensor(self.token_type_ids[index])
         attn_mask = torch.LongTensor(self.attention_mask[index])
@@ -346,9 +349,22 @@ class MLMTokenizedDataset(BaseDataset):
         return len(self.input_ids)
     
     def __getitem__(self, index):
-        input_ids = torch.LongTensor(self.input_ids[index])
-        token_type_id = torch.LongTensor(self.token_type_ids[index])
-        attn_mask = torch.LongTensor(self.attention_mask[index])
+
+        # Truncate before creating LongTensor to avoid errors during mask_tokens
+        max_length = 512
+        input_ids_list = self.input_ids[index]
+        token_type_ids_list = self.token_type_ids[index]
+        attn_mask_list = self.attention_mask[index]
+    
+        if len(input_ids_list) > max_length:
+            print(f"Truncating sample__ {index} from length {len(input_ids_list)} to {max_length}")
+            input_ids_list = input_ids_list[:max_length]
+            token_type_ids_list = token_type_ids_list[:max_length]
+            attn_mask_list = attn_mask_list[:max_length]
+        
+        input_ids = torch.LongTensor(input_ids_list)
+        token_type_id = torch.LongTensor(token_type_ids_list)
+        attn_mask = torch.LongTensor(attn_mask_list)
         input_ids, mlm_labels = self.mask_tokens(input_ids.clone(), special_tokens_mask=None)
         return {
             'input_ids': input_ids,
@@ -409,6 +425,7 @@ class Word2VecDataset(BaseDataset):
 
     def __getitem__(self, item):
         item = self.index_dict[item]
+        #print(f"Loading item {item}...")
         try:
             pos = random.sample(self.pos_pair[item], 5)
         except ValueError:
