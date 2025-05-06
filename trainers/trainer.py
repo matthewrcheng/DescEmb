@@ -1,3 +1,5 @@
+trainer.py
+
 import os
 import logging
 import pprint
@@ -143,7 +145,8 @@ class Trainer(object):
             self.model.train()
             #minor change in for loop to add batch index for debugging purpose
             for batch_idx, sample in enumerate(tqdm.tqdm(self.data_loaders['train'])):
-                print(f"Epoch {epoch}, Batch {batch_idx} loaded...")
+                logger.info(f"Epoch {epoch}, Batch {batch_idx} loaded...")
+
                 self.optimizer.zero_grad(set_to_none=True)
                 net_output = self.model(**sample["net_input"])
                 #NOTE we assume self.model is wrapped by torch.nn.parallel.data_parallel.DataParallel
@@ -165,19 +168,16 @@ class Trainer(object):
                         truths_train += list(target.cpu().numpy().flatten())
                         probs_train = torch.sigmoid(logits).cpu().numpy()
                         preds_train += list(probs_train.flatten())
-
             avg_train_loss = total_train_loss / len(self.data_loaders['train'])
             if self.task not in ['mlm', 'w2v']:
                 auroc_train = roc_auc_score(truths_train, preds_train)
                 auprc_train = average_precision_score(truths_train, preds_train, average='micro')
-
             with rename_logger(logger, "train"):
                 logger.info(
                     "epoch: {}, loss: {:.3f}, auroc: {:.3f}, auprc: {:.3f}".format(
                         epoch, avg_train_loss, auroc_train, auprc_train
                     )
                 )
-
             should_stop = self.validate_and_save(epoch, self.valid_subsets)
             if should_stop:
                 break
