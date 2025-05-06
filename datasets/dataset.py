@@ -109,6 +109,13 @@ class BaseDataset(torch.utils.data.Dataset):
 
         # while torch.equal(masked_indices, torch.zeros(len(masked_indices)).bool()):
         #     masked_indices = torch.bernoulli(probability_matrix).bool()
+        # replace above code which ran infinitely
+        if masked_indices.sum() == 0:
+            # Mask a random non-special token
+            candidate_indices = (~special_tokens_mask).nonzero(as_tuple=False).view(-1)
+            if len(candidate_indices) > 0:
+                random_index = candidate_indices[torch.randint(len(candidate_indices), (1,))]
+                masked_indices[random_index] = True
     
         labels[~masked_indices] = -100  # We only compute loss on masked tokens
 
