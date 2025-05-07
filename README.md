@@ -1,5 +1,5 @@
-# Unifying Heterogeneous Electronic Health Record Systems via Clinical Text-Based Code Embedding
-Kyunghoon Hur, Jiyoung Lee, Jungwoo Oh, Wesley Price, Young-Hak Kim, Edward Choi
+# Reproducing the Results of Unifying Heterogeneous Electronic Health Record Systems via Clinical Text-Based Code Embedding
+Suman Patra and Matthew Cheng
 
 This repository provides official Pytorch code to implement DescEmb, a code-agnostic EHR predictive model.
 
@@ -9,11 +9,11 @@ The paper can be found in this link:
 # Requirements
 
 * [PyTorch](http://pytorch.org/) version >= 1.8.1
-* Python version >= 3.7
+* Python version >= 3.7, <=3.10
 
-# Getting started
+# Steps Taken
 ## Prepare training data
-First, download the dataset from these links: 
+First, download the datasets from these links (make sure you have Physionet access): 
 
 [MIMIC-III](https://physionet.org/content/iii/1.4/)
 
@@ -23,7 +23,7 @@ First, download the dataset from these links:
 
 [icd10cmtoicd9gem](https://data.nber.org/gem/icd10cmtoicd9gem.csv)
 
-Second, make directory sturcture like below:
+Second, make directory structure like below:
 ```
 data_input_path
 ├─ eicu
@@ -64,9 +64,9 @@ $ python preprocess_main.py
     --dataset_path $data_src_directory
     --dest_path $run_ready_directory 
 ```
-Note that pre-processing takes about 1hours in 128 cores of AMD EPYC 7502 32-Core Processor, and requires 60GB of RAM.
+where src_data is either eicu or mimiciii, dataset_path is the input path, and dest_path is the output path. Optionally, you can also include the --ccs_dx_tool_path.
+Note that pre-processing takes about 1hours in 128 cores of AMD EPYC 7502 32-Core Processor, and requires more than 16GB of RAM.
 
-# Examples
 ## Pre-training a model
 ### Pre-train a DescEmb model with Masked Language Modeling (MLM)
 
@@ -87,9 +87,11 @@ $ python main.py \
     --distributed_world_size $WORLDSIZE \
     --input_path /path/to/data \
     --src_data $data \
-    --task w2v
+    --task w2v \
     --model codeemb
 ```
+Note that `--input-path ` should be the root directory containing preprocessed data.
+
 $data should be set to 'mimic' or 'eicu'
 
 $percent should be set to probability (default: 0.3) of masking for MLM
@@ -136,6 +138,11 @@ $ python main.py \
     --value_mode $value \
     --task $task
 ```
+For our training, we did set the following values:
+--value-mode DSVA_DPE
+--task mortality
+--batch_size 16
+
 Note: if you want to train with pre-trained BERT model, add command line parameters `--init_bert_params` or `--init_bert_params_with_freeze`. `--init_bert_params_with_freeze` enables the model to load and freeze BERT parameters.
 
 ## Fine-tune a pre-trained model
@@ -187,13 +194,14 @@ $ python main.py \
     --value_mode $value \
     --task $task \
 ```
-Note that `--embed_model` and `pred_model` should be matched with the transferred model.
+Note that `--embed_model` and `pred_model` should be matched with the transferred model. The input path remains the root directory containing preprocessed data. To get the model path, find the most recent checkpoint for the target input model under /outputs/
+
+In our project, we performed the above steps for both DescEmb and CodeEmb using both MIMIC-III and eICU as datasets. We also tried transfer learning between both datasets.
 
 # License
 This repository is MIT-lincensed.
 
-# Citation
-Please cite as:
+# Original Paper Citation
 ```
 @misc{hur2021unifying,
       title={Unifying Heterogenous Electronic Health Records Systems via Text-Based Code Embedding}, 
