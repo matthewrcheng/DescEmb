@@ -99,7 +99,7 @@ $percent should be set to probability (default: 0.3) of masking for MLM
 $model should be set to 'descemb_bert' or 'descemb_rnn'
 
 ## Training a new model
-Other configurations will set to be default, which were used in the DescEmb paper.
+Below are configurations for the training that can be set. Other hyperparameters can be set as well, but these are defaulting to the values used in the paper.
 
 `$descemb` should be 'descemb_bert' or 'descemb_rnn'
 
@@ -138,7 +138,7 @@ $ python main.py \
     --value_mode $value \
     --task $task
 ```
-For our training, we did set the following values:
+For our training, we set the following values:
 --value-mode DSVA_DPE
 --task mortality
 --batch_size 16
